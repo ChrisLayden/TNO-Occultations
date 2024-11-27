@@ -9,7 +9,7 @@ fig.subplots_adjust(left=0.25, bottom=0.25)
 
 # Set circle sizes (not to scale, just visually proportional)
 earth_radius = 0.5  # Earth size (arbitrary units)
-TNO_radius = 0.2  # TNO size (smaller than Earth)
+TNO_radius = 0.25  # TNO size (smaller than Earth)
 star_radius = 2.0  # Star size (larger than Earth)
 
 # Define positions (not to scale, just visually clear)
@@ -26,9 +26,9 @@ ax.add_artist(earth)
 ax.add_artist(star)
 
 # Add labels for the objects
-ax.text(earth_position[0], 4, 'Earth', color='blue', fontsize=12, ha='center')
-ax.text(TNO_initial_position[0], 4, 'TNO', color='black', fontsize=12, ha='center')
-ax.text(star_position[0], 4, 'Star', color='orange', fontsize=12, ha='center')
+ax.text(earth_position[0], 4.5, 'Earth', color='blue', fontsize=12, ha='center')
+ax.text(TNO_initial_position[0], 4.5, 'TNO', color='black', fontsize=12, ha='center')
+ax.text(star_position[0], 4.5, 'Star', color='orange', fontsize=12, ha='center')
 
 # Draw lines to show the angle subtended by the star from Earth's point of view
 ax.plot([earth_position[0] + earth_radius, star_position[0]], [earth_position[1], star_radius], color='orange', linestyle='--')
@@ -75,8 +75,10 @@ y_slider = Slider(
 # Lines representing the Fresnel scale
 fresnel_scale = np.sqrt(x_slider.val - earth_position[0] - earth_radius) / 2
 ax.plot([TNO_initial_position[0], TNO_initial_position[0]], [-fresnel_scale / 2 + y_slider.val, fresnel_scale / 2 + y_slider.val], color='black')
+ax.plot([TNO_initial_position[0] - 0.25, TNO_initial_position[0] + 0.25], [-fresnel_scale / 2 + y_slider.val, -fresnel_scale / 2 + y_slider.val], color='black')
+ax.plot([TNO_initial_position[0] - 0.25, TNO_initial_position[0] + 0.25], [fresnel_scale / 2 + y_slider.val, fresnel_scale / 2 + y_slider.val], color='black')
 # Label the line
-ax.text(TNO_initial_position[0], y_slider.val + fresnel_scale / 2 + 0.4, r'$F_s$', color='black', fontsize=12, ha='center', va='center')
+ax.text(TNO_initial_position[0], y_slider.val + fresnel_scale / 2 + 0.5, r'$F_s$', color='black', fontsize=12, ha='center', va='center')
 # Create a shadow with height equal to the fresnel scale extending from the TNO to the left. Use a semi-transparent rectangle.
 outer_shadow = plt.Rectangle((earth_position[0] + earth_radius, -fresnel_scale / 2 + TNO_initial_position[1]),
                        TNO_initial_position[0] - earth_position[0] - earth_radius, fresnel_scale, color='black', alpha=0.1)
@@ -98,24 +100,35 @@ projected_star_radius = star_radius * (TNO_initial_position[0] - earth_position[
 ax.plot([TNO_initial_position[0], TNO_initial_position[0]], [-projected_star_radius, projected_star_radius], color='orange', linestyle='--')
 ax.text(TNO_initial_position[0], -projected_star_radius - 0.5, r'$2R_{star}$', color='orange', fontsize=12, ha='center', va='center')
 
+# Add line showing the diameter of the TNO
+ax.plot([TNO_initial_position[0] + TNO_radius + 0.5, TNO_initial_position[0] + TNO_radius + 0.5], [TNO_initial_position[1] - TNO_radius, TNO_initial_position[1] + TNO_radius], color='black')
+# # Vertical lines to make it look like a ruler
+ax.plot([TNO_initial_position[0] + TNO_radius + 0.75, TNO_initial_position[0] + TNO_radius + 0.25], [TNO_initial_position[1] - TNO_radius, TNO_initial_position[1] - TNO_radius], color='black')
+ax.plot([TNO_initial_position[0] + TNO_radius + 0.75, TNO_initial_position[0] + TNO_radius + 0.25], [TNO_initial_position[1] + TNO_radius, TNO_initial_position[1] + TNO_radius], color='black')
+ax.text(TNO_initial_position[0] + TNO_radius + 1, TNO_initial_position[1], r'2$R_{TNO}$', color='black', fontsize=12, ha='left', va='center')
+
 # The function to be called anytime a slider's value changes
 def update(val):
     tno.set_center((x_slider.val, y_slider.val))
-    ax.texts[1].set_position((x_slider.val, 4))
+    ax.texts[1].set_position((x_slider.val, 4.5))
     # Adjust line from earth to TNO
     ax.lines[2].set_xdata([earth_position[0] + earth_radius, x_slider.val])
     ax.lines[4].set_xdata([x_slider.val, x_slider.val])
     fresnel_scale = np.sqrt(x_slider.val - earth_position[0] - earth_radius) / 2
     ax.texts[3].set_position(((x_slider.val + earth_position[0] + earth_radius) / 2, -2.5))
     # Adjust line to shadow center
-    ax.lines[6].set_ydata([y_slider.val, earth_position[1]])
-    ax.lines[8].set_ydata([y_slider.val, y_slider.val])
+    ax.lines[8].set_ydata([y_slider.val, earth_position[1]])
+    ax.lines[10].set_ydata([y_slider.val, y_slider.val])
     ax.texts[5].set_position((earth_position[0] - earth_radius - 1.5, (earth_position[1] + y_slider.val) / 2))
     # Adjust fresnel scale line
     ax.lines[5].set_xdata([x_slider.val, x_slider.val])
     ax.lines[5].set_ydata([-fresnel_scale / 2 + y_slider.val, fresnel_scale / 2 + y_slider.val])
+    ax.lines[6].set_xdata([x_slider.val - 0.25, x_slider.val + 0.25])
+    ax.lines[6].set_ydata([-fresnel_scale / 2 + y_slider.val, -fresnel_scale / 2 + y_slider.val])
+    ax.lines[7].set_xdata([x_slider.val - 0.25, x_slider.val + 0.25])
+    ax.lines[7].set_ydata([fresnel_scale / 2 + y_slider.val, fresnel_scale / 2 + y_slider.val])
     # Move the label
-    ax.texts[4].set_position((x_slider.val, y_slider.val + 0.4 + fresnel_scale / 2))
+    ax.texts[4].set_position((x_slider.val, y_slider.val + 0.5 + fresnel_scale / 2))
     # Move the shadow
     ax.patches[3].set_width(x_slider.val - earth_position[0] - earth_radius)
     ax.patches[3].set_height(fresnel_scale)
@@ -125,9 +138,19 @@ def update(val):
     ax.patches[4].set_xy([earth_position[0] + earth_radius, -TNO_radius + y_slider.val])
     # Adjust projected stellar radius
     projected_star_radius = star_radius * (x_slider.val - earth_position[0]) / (star_position[0] - earth_position[0])
-    ax.lines[9].set_xdata([x_slider.val, x_slider.val])
-    ax.lines[9].set_ydata([-projected_star_radius, projected_star_radius])
+    ax.lines[11].set_xdata([x_slider.val, x_slider.val])
+    ax.lines[11].set_ydata([-projected_star_radius, projected_star_radius])
     ax.texts[6].set_position((x_slider.val, -projected_star_radius - 0.5))
+
+    # Move the TNO radius label and line
+    ax.lines[12].set_xdata([x_slider.val + TNO_radius + 0.5, x_slider.val + TNO_radius + 0.5])
+    ax.lines[12].set_ydata([y_slider.val - TNO_radius, y_slider.val + TNO_radius])
+    ax.lines[13].set_xdata([x_slider.val + TNO_radius + 0.75, x_slider.val + TNO_radius + 0.25])
+    ax.lines[13].set_ydata([y_slider.val - TNO_radius, y_slider.val - TNO_radius])
+    ax.lines[14].set_xdata([x_slider.val + TNO_radius + 0.75, x_slider.val + TNO_radius + 0.25])
+    ax.lines[14].set_ydata([y_slider.val + TNO_radius, y_slider.val + TNO_radius])
+    ax.texts[7].set_position((x_slider.val + TNO_radius + 1, y_slider.val))
+
     fig.canvas.draw_idle()
 
 x_slider.on_changed(update)
